@@ -10,7 +10,7 @@ let curPath = "/";
 const PAGE_FILES = {
   "": "index.html", about: "about.html", courses: "courses.html", "learning-paths": "learning-paths.html",
   projects: "projects.html", resources: "resources.html", blog: "blog.html", faq: "faq.html",
-  contact: "contact.html", privacy: "privacy.html", terms: "terms.html", labs: "labs.html",
+  contact: "contact.html", privacy: "privacy.html", terms: "terms.html", labs: "labs.html", practice: "practice.html",
   learn: "learn.html", login: "login.html", register: "register.html", dashboard: "dashboard.html", admin: "admin.html"
 };
 const pageFile = path => PAGE_FILES[path.split("?")[0].split("/")[1] || ""] || "index.html";

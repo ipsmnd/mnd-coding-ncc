@@ -2,6 +2,8 @@
 /* ============================================================
    BOOT
    ============================================================ */
+/* Inside the Android app (Capacitor WebView) PDF downloads are unsupported, so download links are hidden via CSS */
+if (window.Capacitor) document.documentElement.classList.add("in-app");
 (async function boot() {
   curPath = pathFromHash();
   if (pageFile(curPath) !== CUR_FILE) { goToPage(curPath, true); return; }

@@ -2833,11 +2833,208 @@ const PATHS = [
   { id: "security-analyst", title: "Security Analyst & Pentester", icon: "shield", for: "Learners who want to assess and defend systems responsibly.", steps: ["Network Setup & Administration — core modules", "Ethical Hacking — Modules 1–4 (fundamentals, Linux, lab)", "Ethical Hacking — Modules 5–9 (methodology)", "Lab: vulnerability prioritisation, report writing", "Capstone: full assessment report in an authorized lab"], courses: ["networking", "ethical-hacking"] }
 ];
 const PROJECTS = [
-  { title: "Small office network design", course: "networking", level: "Beginner", icon: "network", brief: "Design a network for a 25-person office with staff, guest and printer segments. Deliver a topology diagram, IP plan and equipment list.", deliver: ["Requirements summary", "Topology diagram", "IPv4 addressing plan", "Justified equipment list"] },
-  { title: "VLAN and routing simulation", course: "networking", level: "Intermediate", icon: "route", brief: "In a free simulator, build three VLANs on one switch, route between them with a router-on-a-stick, and restrict guest access with an ACL.", deliver: ["Simulator file", "Configuration excerpts", "Test results table", "Troubleshooting notes"] },
-  { title: "Secure cloud network architecture", course: "cloud-computing", level: "Intermediate", icon: "cloud", brief: "Design a two-zone VPC with public load balancers, private app servers and an isolated database tier, written in Terraform and validated with plan only.", deliver: ["Architecture diagram", "Terraform configuration", "Security group matrix", "Cost assumptions"] },
-  { title: "Linux system hardening checklist", course: "ethical-hacking", level: "Intermediate", icon: "terminal", brief: "Harden a fresh Linux VM in your lab: remove unused services, configure SSH keys, set firewall default-deny, enable logging. Record before/after evidence.", deliver: ["Baseline checklist", "Before/after evidence", "Residual risk notes"] },
-  { title: "Authorized web security assessment lab", course: "ethical-hacking", level: "Advanced", icon: "shield", brief: "Assess an intentionally vulnerable application running only in your isolated lab. Follow the full methodology and write a professional report with remediation.", deliver: ["Rules of engagement", "Findings with CVSS", "Remediation plan", "Retest results"] }
+  { title: "Small office network design", course: "networking", level: "Beginner", icon: "network", brief: "Design a network for a 25-person office with staff, guest and printer segments. Deliver a topology diagram, IP plan and equipment list.", deliver: ["Requirements summary", "Topology diagram", "IPv4 addressing plan", "Justified equipment list"], pdf: "projects/Project Small Office Network Design (25-User Office).pdf", guide: "small-office-network" },
+  { title: "VLAN and routing simulation", course: "networking", level: "Intermediate", icon: "route", brief: "In a free simulator, build three VLANs on one switch, route between them with a router-on-a-stick, and restrict guest access with an ACL.", deliver: ["Simulator file", "Configuration excerpts", "Test results table", "Troubleshooting notes"], pdf: "projects/VLAN and Inter-VLAN Routing Simulation Project.pdf", guide: "vlan-routing" },
+  { title: "Secure cloud network architecture", course: "cloud-computing", level: "Intermediate", icon: "cloud", brief: "Design a two-zone VPC with public load balancers, private app servers and an isolated database tier, written in Terraform and validated with plan only.", deliver: ["Architecture diagram", "Terraform configuration", "Security group matrix", "Cost assumptions"], pdf: "projects/Secure Cloud Network Architecture Guided Projects.pdf", guide: "secure-cloud-network" },
+  { title: "Linux system hardening checklist", course: "ethical-hacking", level: "Intermediate", icon: "terminal", brief: "Harden a fresh Linux VM in your lab: remove unused services, configure SSH keys, set firewall default-deny, enable logging. Record before/after evidence.", deliver: ["Baseline checklist", "Before/after evidence", "Residual risk notes"], pdf: "projects/Linux System Hardening Checklist and Guided Projects.pdf", guide: "linux-hardening" },
+  { title: "Authorized web security assessment lab", course: "ethical-hacking", level: "Advanced", icon: "shield", brief: "Assess an intentionally vulnerable application running only in your isolated lab. Follow the full methodology and write a professional report with remediation.", deliver: ["Rules of engagement", "Findings with CVSS", "Remediation plan", "Retest results"], pdf: "projects/Web Security Assessment Lab Guided Projects.pdf", guide: "web-security-assessment" }
+];
+/* Full project guides (also downloadable as PDF from /projects).
+   Text supports `code` and **bold**. Sections: overview → checklist → projects → capstone → after → tools. */
+const PROJECT_GUIDES = [
+  { slug: "small-office-network", title: "Project: Small Office Network Design (25-User Office)", short: "Small Office Network Design", course: "networking", icon: "network",
+    pdf: "projects/Project Small Office Network Design (25-User Office).pdf",
+    lead: "A guided project with real deliverables: design, cost, build, secure and hand over the network for a growing 25-person office.",
+    level: "Beginner → Intermediate", time: "10 days", unit: "Phase",
+    overview: [
+      { title: "Scenario", text: "You're the network engineer for **BrightPath Consulting**, a 25-employee office that is moving into a new single-floor space. They need a secure, reliable network that can grow to about 40 users over three years." },
+      { title: "Client requirements", items: [
+        "25 staff PCs and laptops, 3 network printers, 1 file server (or NAS), 6 IP phones",
+        "Guest Wi-Fi that is isolated from the internal network",
+        "Departments: Management (4), Sales (8), Accounts (6), IT/Support (3), Reception (4)",
+        "Accounts and Management traffic must be separated from other departments",
+        "Single ISP link, with a basic plan for failover",
+        "Budget: about ₹3–4 lakh for hardware (or $4,000–5,000)"] }
+    ],
+    projects: [
+      { title: "Requirements and Planning", when: "Day 1–2",
+        goal: "Interview-style requirements gathering, a site survey, and a bandwidth estimate.",
+        deliver: ["Requirements document (users, devices, services, growth, budget)", "Floor plan sketch showing rack location, cable runs, and Wi-Fi access point placement", "Bandwidth estimate (e.g., 25 users × 5 Mbps average = about 125 Mbps, with a justified ISP plan)"] },
+      { title: "Logical Design", when: "Day 3–4",
+        deliver: ["**Topology diagram** (draw.io, Visio, or Packet Tracer)", "**VLAN plan** (see the table below)", "**IP addressing scheme** with reserved ranges for gateways, static devices, and DHCP pools", "**Security policy table** (who can talk to whom), for example: Guest → Internet only; Sales → Servers (file shares only); Accounts → Servers + restricted share; IT → everything"],
+        table: { caption: "VLAN plan", head: ["VLAN", "Name", "Subnet", "Purpose"], rows: [
+          ["10", "Management", "192.168.10.0/26", "Management/executives"], ["20", "Sales", "192.168.20.0/26", "Sales team"],
+          ["30", "Accounts", "192.168.30.0/27", "Finance, restricted"], ["40", "IT", "192.168.40.0/28", "IT admin"],
+          ["50", "Voice", "192.168.50.0/27", "IP phones"], ["60", "Servers/Printers", "192.168.60.0/27", "NAS, printers"],
+          ["70", "Guest", "192.168.70.0/26", "Isolated Wi-Fi"], ["99", "Network Mgmt", "192.168.99.0/28", "Switch/AP management"]] } },
+      { title: "Physical Design and Bill of Materials", when: "Day 5",
+        stepsLabel: "Equipment list (with justification)",
+        steps: ["1× router/firewall (e.g., Fortinet 60F, MikroTik, pfSense box)", "1× 24-port PoE managed switch + 1× 8-port access switch (for growth)", "2–3× Wi-Fi 6 access points", "Patch panel, 12U wall rack, UPS", "Cat6 cabling plan (drops per desk, meeting room, printers)"],
+        deliver: ["Equipment list with justification", "**Costed BOM** (spreadsheet with unit price, quantity, total, and 15% contingency)", "Cable schedule (port-to-port labeling scheme)"] },
+      { title: "Build and Simulate", when: "Day 6–8",
+        goal: "Build the design in **Cisco Packet Tracer**, **GNS3**, or **EVE-NG**.",
+        stepsLabel: "Configure",
+        steps: ["VLANs and trunk ports", "Inter-VLAN routing (router-on-a-stick or L3 switch SVIs)", "DHCP pools per VLAN", "ACLs enforcing your security policy", "NAT/PAT for internet access", "Port security and disabling unused ports", "Wireless SSIDs (Staff and Guest) mapped to VLANs"],
+        deliver: ["Working simulation file (`.pkt` / `.gns3project`)", "Full device configs (text files)", "Test plan with results (example below)"],
+        table: { caption: "Test plan", head: ["Test", "Expected", "Result"], rows: [
+          ["Sales PC pings Accounts PC", "Blocked", ""], ["Guest reaches internal server", "Blocked", ""], ["All VLANs reach internet", "Success", ""], ["Phone gets DHCP in VLAN 50", "Success", ""]] } },
+      { title: "Security, Monitoring, and Resilience", when: "Day 9",
+        deliver: ["Firewall rule set and hardening checklist (SSH only, no default passwords, SNMPv3, NTP, logging)", "Backup plan: config backups, NAS backup (3-2-1 rule)", "Monitoring setup: Zabbix, PRTG free tier, or LibreNMS, with a screenshot of the dashboard", "Failover plan: secondary 4G/5G link or a second ISP, with a described switchover method"] },
+      { title: "Documentation and Handover", when: "Day 10",
+        deliverLabel: "Final package",
+        deliver: ["Network design document (PDF) covering everything above", "As-built diagrams (logical and physical)", "IP/VLAN spreadsheet", "Admin runbook: how to add a user, reset a switch, replace an AP, and troubleshoot common issues", "10-minute presentation to a \"non-technical client\""] }
+    ],
+    after: [
+      { title: "Grading rubric (100 pts)", table: { head: ["Area", "Points"], rows: [["Requirements and planning", "10"], ["Logical design (VLANs, IPs)", "20"], ["Physical design and BOM", "15"], ["Working simulation and configs", "25"], ["Security and monitoring", "15"], ["Documentation and presentation", "15"]] } },
+      { title: "Stretch goals", items: ["Add a site-to-site VPN to a branch office", "Implement 802.1X/RADIUS authentication for Wi-Fi", "Add a redundant switch with STP/LACP link aggregation", "Build a small Ansible/Python script to back up configs automatically", "Plan an IPv6 rollout"] }
+    ],
+    tools: ["Packet Tracer (free)", "draw.io", "Excel/Sheets", "Wireshark", "Zabbix/LibreNMS", "PDF or Word editor"] },
+
+  { slug: "vlan-routing", title: "VLAN and Inter-VLAN Routing Simulation Project", short: "VLAN and Inter-VLAN Routing", course: "networking", icon: "route",
+    pdf: "projects/VLAN and Inter-VLAN Routing Simulation Project.pdf",
+    lead: "A guided project with real deliverables: design, build, secure, test and document a multi-VLAN company network in a simulator.",
+    level: "Beginner → Intermediate (CCNA-style)", time: "10–15 hours over 1–2 weeks", unit: "Phase",
+    overview: [
+      { title: "Scenario", text: "You're the network engineer for a small company, \"NovaTech\", with 3 floors, 4 departments, and a guest Wi-Fi network. You design, build, secure, test, and document the network in a simulator.",
+        facts: [["Tools", "Cisco Packet Tracer (easiest), or GNS3 / EVE-NG if you want real IOS images"], ["Time", "10–15 hours over 1–2 weeks"], ["Level", "Beginner to intermediate (CCNA-style)"]] },
+      { title: "Topology", items: ["1 router (router-on-a-stick), later upgraded to a Layer 3 switch (SVIs)", "1 core/distribution switch + 2 access switches", "8–10 PCs, 1 server, 1 wireless AP (guest)", "Optional: second router to practice static and OSPF routing"] },
+      { title: "VLAN and IP plan", table: { head: ["VLAN", "Name", "Subnet", "Gateway"], rows: [["10", "Sales", "192.168.10.0/24", ".1"], ["20", "Engineering", "192.168.20.0/24", ".1"], ["30", "HR", "192.168.30.0/24", ".1"], ["40", "Servers", "192.168.40.0/24", ".1"], ["50", "Guest", "192.168.50.0/24", ".1"], ["99", "Management", "192.168.99.0/24", ".1"], ["999", "Native/Blackhole", "unused", "n/a"]] } }
+    ],
+    projects: [
+      { title: "Design and Planning", steps: ["Draw the logical and physical topology diagrams", "Build the VLAN/IP/port assignment table"], deliver: ["Network design document (diagram + addressing table)"] },
+      { title: "Layer 2 Build", steps: ["Create VLANs, assign access ports, configure 802.1Q trunks", "Set the native VLAN to 999, and prune allowed VLANs on trunks", "Configure VTP transparent (or disabled) and verify"], deliver: ["Switch configs + `show vlan brief` / `show interfaces trunk` screenshots"] },
+      { title: "Inter-VLAN Routing", steps: ["Router-on-a-stick with subinterfaces (`encapsulation dot1Q`)", "Configure DHCP pools per VLAN with excluded addresses and DHCP relay if needed", "Test with ping and traceroute across VLANs"], deliver: ["Router config + connectivity test matrix"] },
+      { title: "Upgrade to Layer 3 Switch", steps: ["Replace router-on-a-stick with SVIs and `ip routing`", "Compare the two designs (performance, scalability, cost)"], deliver: ["Short comparison write-up (half a page)"] },
+      { title: "Routing Extension", steps: ["Add a second site or ISP router", "Configure a default route, static routes, then OSPF single-area"], deliver: ["Routing tables + `show ip ospf neighbor` evidence"] },
+      { title: "Security and Access Control", steps: ["Extended ACLs: Guest can reach the internet but not internal VLANs; HR is isolated from Sales", "Port security, BPDU guard, and shutdown of unused ports", "SSH-only management, disabled Telnet, and encrypted passwords"], deliver: ["ACL policy table + before/after test results"] },
+      { title: "Troubleshooting Lab", goal: "Inject and fix 5 faults.", stepsLabel: "Faults to inject", steps: ["Wrong access VLAN on a port", "Trunk native VLAN mismatch", "VLAN missing from the allowed trunk list", "Wrong subinterface encapsulation", "ACL blocking legitimate traffic"], deliver: ["Troubleshooting log (symptom, diagnosis commands, root cause, fix)"] },
+      { title: "Documentation and Presentation", steps: ["Final report, config backups, and a 5-minute walkthrough demo"], deliver: ["PDF report + `.pkt`/GNS3 project file + demo recording"] }
+    ],
+    checklistAfter: true,
+    checklist: { title: "Final deliverables checklist", intro: "Tick each deliverable as you finish it.", groups: [
+      { title: "Hand-in package", icon: "list", items: ["Topology diagrams (logical and physical)", "IP and VLAN addressing plan", "Full device configurations (text files)", "Test plan with pass/fail results", "Security policy and ACL documentation", "Troubleshooting log", "Final report (design decisions, lessons learned)", "Saved simulation file and demo video"] }] },
+    after: [
+      { title: "Grading rubric (self-assessment)", table: { head: ["Area", "Weight"], rows: [["Correct VLAN/trunk setup", "20%"], ["Inter-VLAN routing and DHCP working", "20%"], ["Routing protocol extension", "15%"], ["Security and ACLs", "15%"], ["Troubleshooting skill", "15%"], ["Documentation quality", "15%"]] } },
+      { title: "Stretch goals", items: ["EtherChannel (LACP) between switches", "HSRP for gateway redundancy", "Spanning tree tuning (root bridge, PortFast, RSTP)", "Automate config generation with Python (Netmiko/Jinja2)"] }
+    ],
+    tools: ["Cisco Packet Tracer", "GNS3", "EVE-NG", "Python (Netmiko/Jinja2)"] },
+
+  { slug: "secure-cloud-network", title: "Secure Cloud Network Architecture: Guided Projects", short: "Secure Cloud Network Architecture", course: "cloud-computing", icon: "cloud",
+    pdf: "projects/Secure Cloud Network Architecture Guided Projects.pdf",
+    lead: "Five projects that build on each other, each ending with deliverables you can put in a portfolio. AWS terms are used, with Azure/GCP equivalents noted where they differ.",
+    level: "Intermediate → Advanced", time: "10–12 weeks", unit: "Project",
+    projects: [
+      { title: "Secure Landing Zone and Network Foundation", goal: "Build a multi-tier, segmented network from scratch.",
+        steps: ["Design the IP plan (CIDR allocation for prod, dev, shared services, with room to grow)", "Build a VPC/VNet with public, private-app, and private-data subnets across 2–3 availability zones", "Configure route tables, NAT gateways, security groups, and NACLs (Azure: NSGs)", "Add VPC endpoints/Private Link so private workloads reach cloud services without touching the internet"],
+        deliver: ["Network diagram (draw.io or Lucidchart)", "Terraform code for the full network", "IP addressing and segmentation document", "Test evidence showing blocked and allowed traffic paths"] },
+      { title: "Hub-and-Spoke with Centralized Inspection", goal: "Connect multiple environments through a controlled hub.",
+        steps: ["Deploy Transit Gateway (Azure: Virtual WAN/hub VNet) with spoke VPCs", "Add a central inspection VPC with a firewall (AWS Network Firewall, Azure Firewall, or a Palo Alto/Fortinet appliance)", "Force east-west and egress traffic through the hub", "Write firewall rules: domain allowlists for egress, IPS signatures, deny-by-default between spokes"],
+        deliver: ["Hub-and-spoke architecture diagram with traffic flow numbering", "Firewall rule matrix (source, destination, port, justification)", "Terraform modules for the hub and spokes", "Validation report using test instances"] },
+      { title: "Hybrid Connectivity and Zero Trust Access", goal: "Securely connect on-premises users and sites, and replace flat VPN access.",
+        steps: ["Set up Site-to-Site VPN (IPsec/IKEv2) using a simulated on-prem network (pfSense or a second VPC)", "Add Client VPN or a ZTNA approach (Cloudflare Access, Tailscale, AWS Verified Access)", "Integrate SSO/MFA through an identity provider (Entra ID, Okta, or Keycloak)", "Replace SSH/RDP exposure with Session Manager, Bastion, or Identity-Aware Proxy"],
+        deliver: ["Connectivity design document with encryption parameters", "Access policy matrix (who can reach what, under what conditions)", "Demo showing no inbound management ports are open", "Failover test results (tunnel redundancy)"] },
+      { title: "Edge Security for a Public Application", goal: "Protect an internet-facing web app end to end.",
+        steps: ["Front the app with CDN, WAF (OWASP managed rules plus custom rate limits), and DDoS protection", "Configure TLS 1.2+/1.3, HSTS, and certificate automation", "Place the app behind an ALB/App Gateway with private backend instances", "Add DNS security (DNSSEC where supported, Route 53 Resolver DNS Firewall)", "Run an attack simulation (OWASP ZAP, SQLi/XSS attempts) and tune rules"],
+        deliver: ["Threat model (STRIDE) for the application", "WAF rule set with before/after attack test results", "Architecture diagram with trust boundaries marked", "TLS configuration audit (SSL Labs grade A or better)"] },
+      { title: "Monitoring, Detection, and Compliance Automation", goal: "Make the network observable and continuously audited.",
+        steps: ["Enable VPC Flow Logs, DNS logs, firewall logs, and CloudTrail/Activity Logs, and centralize them", "Build detections in a SIEM (Security Hub, Sentinel, Splunk, or the ELK stack): port scans, unusual egress, and policy changes", "Add policy-as-code guardrails (AWS Config, Azure Policy, OPA/Checkov in CI) to block insecure changes such as open `0.0.0.0/0` rules", "Run an incident drill: simulate a compromised instance and contain it with automated isolation"],
+        deliver: ["Dashboards and alert rules", "CI pipeline that fails on insecure Terraform", "Mapping of controls to CIS Benchmarks or NIST 800-53", "Incident response runbook plus drill write-up"] }
+    ],
+    capstone: { title: "Capstone: Secure Multi-Tier Architecture", text: "Combine all five projects into one reference architecture with:", items: ["A full design document covering requirements, decisions, and trade-offs", "Complete IaC repository with CI/CD", "Security test report and residual risk register", "A 10-minute architecture walkthrough presentation"] },
+    after: [
+      { title: "Suggested timeline and tooling", facts: [["Timeline", "About 2 weeks per project, 10–12 weeks including the capstone"], ["Tools", "Terraform, draw.io, Wireshark, nmap, OWASP ZAP, Checkov, pfSense"]] }
+    ],
+    note: "**Cost tip:** use free tiers and tear down with `terraform destroy` after each session. NAT gateways and firewalls are the main cost drivers.",
+    tools: ["Terraform", "draw.io", "Wireshark", "nmap", "OWASP ZAP", "Checkov", "pfSense"] },
+
+  { slug: "linux-hardening", title: "Linux System Hardening: Checklist and Guided Projects", short: "Linux System Hardening", course: "ethical-hacking", icon: "terminal",
+    pdf: "projects/Linux System Hardening Checklist and Guided Projects.pdf",
+    lead: "A practical hardening checklist plus four guided projects with real deliverables, from a single baseline-hardened server to a monitored multi-host stack.",
+    level: "Beginner → Advanced", unit: "Project",
+    checklist: { title: "Hardening checklist", intro: "Tick items as you apply them on your lab VM.", groups: [
+      { title: "Accounts and access", icon: "user", items: [
+        "Disable root SSH login and password authentication (`PermitRootLogin no`, `PasswordAuthentication no`)",
+        "Use SSH keys (ed25519) and restrict users with `AllowUsers`",
+        "Enforce a password policy via `pam_pwquality` and `faillock`",
+        "Configure sudo with least privilege; audit users with UID 0"] },
+      { title: "Network", icon: "network", items: [
+        "Default-deny firewall (`nftables`, `ufw` or `firewalld`); open only required ports",
+        "Disable unused services (`systemctl list-unit-files --state=enabled`)",
+        "Harden kernel network settings via `sysctl` (rp_filter, disable ICMP redirects, enable SYN cookies)",
+        "Install `fail2ban` or `sshguard`"] },
+      { title: "System and kernel", icon: "server", items: [
+        "Apply automatic security updates",
+        "Separate and mount-restrict partitions (`/tmp`, `/var`, `/home` with `nodev,nosuid,noexec` where possible)",
+        "Enable SELinux or AppArmor in enforcing mode",
+        "Restrict core dumps, `dmesg` and `kptr_restrict`",
+        "Enable Secure Boot and a GRUB password if physical access matters"] },
+      { title: "Files and permissions", icon: "lock", items: [
+        "Find SUID/SGID binaries and world-writable files",
+        "Set a restrictive umask (`027`)",
+        "Protect `/etc/shadow`, SSH keys and cron directories"] },
+      { title: "Logging and monitoring", icon: "eye", items: [
+        "Enable `auditd` with rules for auth, sudo and file changes",
+        "Ship logs to a remote host",
+        "Install a file integrity checker (AIDE)",
+        "Run `rkhunter` or `chkrootkit` and Lynis regularly"] },
+      { title: "Verification", icon: "check", items: [
+        "Run Lynis and OpenSCAP against the CIS Benchmark for your distro",
+        "Re-scan after changes and record your score improvement"] }] },
+    projects: [
+      { title: "Secure a fresh server", level: "Beginner",
+        goal: "Take a default Ubuntu, Debian or Rocky VM from insecure to baseline-hardened.",
+        steps: ["Run a baseline Lynis scan", "Harden SSH", "Configure the firewall", "Create a non-root admin user", "Enable unattended upgrades", "Install fail2ban", "Re-scan and compare"],
+        deliver: ["Before/after Lynis reports with score comparison", "A `harden.sh` script that reproduces your changes", "A one-page changelog explaining each change and why"] },
+      { title: "CIS Benchmark compliance audit", level: "Intermediate",
+        goal: "Measure and remediate a system against CIS Level 1.",
+        steps: ["Run OpenSCAP or `cis-cat`", "Triage failures by risk", "Remediate manually (to learn)", "Automate the fixes with Ansible", "Re-scan"],
+        deliver: ["HTML compliance report (before and after)", "Ansible playbook or role that applies the fixes idempotently", "Exceptions register: controls you skipped and the justification"] },
+      { title: "Mandatory access control and auditing", level: "Intermediate",
+        goal: "Confine a service and detect misuse.",
+        steps: ["Put SELinux or AppArmor in enforcing mode", "Confine a web server (nginx or Apache)", "Write or tune a policy for a custom app", "Configure `auditd` rules", "Simulate an attack (for example, writing outside the web root) and trace the logs"],
+        deliver: ["Custom policy or profile file", "`audit.rules` file with explanations", "Incident write-up showing the denied action and how you detected it"] },
+      { title: "Hardened, monitored production stack", level: "Advanced",
+        goal: "Build a multi-host environment with continuous verification.",
+        steps: ["Provision 2–3 VMs (web, DB, log server)", "Harden them with Ansible", "Segment the network with nftables", "Set up central logging (rsyslog, Loki or ELK)", "Run AIDE integrity checks on a cron job or systemd timer", "Add alerting on failed logins and file changes", "Test yourself with Nmap and Lynis"],
+        deliver: ["Architecture diagram", "Git repo with infrastructure code and README", "Monitoring dashboard screenshots and alert rules", "Final security assessment report with findings and remediation"] }
+    ],
+    capstone: { title: "Capstone (optional)", text: "Document everything as a portfolio-ready runbook: threat model, hardening standard, automation repo and audit evidence." },
+    tools: ["Lynis", "OpenSCAP", "Ansible", "auditd", "AIDE", "fail2ban", "nftables", "SELinux / AppArmor", "Nmap"] },
+
+  { slug: "web-security-assessment", title: "Web Security Assessment Lab: Guided Projects", short: "Web Security Assessment Lab", course: "ethical-hacking", icon: "shield",
+    pdf: "projects/Web Security Assessment Lab Guided Projects.pdf",
+    lead: "Guided projects with real deliverables, run only against deliberately vulnerable apps you host yourself or platforms that grant permission.",
+    level: "Intermediate → Advanced", time: "8 weeks", unit: "Project", startAt: 0,
+    warn: "All projects run against deliberately vulnerable apps you host yourself (OWASP Juice Shop, DVWA, WebGoat, crAPI) or platforms that grant permission (PortSwigger Web Security Academy, Hack The Box, TryHackMe). **Never test systems you don't own or lack written authorization for.**",
+    projects: [
+      { title: "Lab setup", goal: "Build an isolated, repeatable testing environment.",
+        steps: ["Run targets in Docker on a host-only or NAT network (e.g., `docker run -p 3000:3000 bkimminich/juice-shop`)", "Install Burp Suite Community or OWASP ZAP, plus a browser profile proxied through it", "Keep a note-taking system (Obsidian, CherryTree) and a findings template"],
+        deliver: ["Network diagram", "Setup README", "Snapshot of the working environment", "Blank report template"] },
+      { title: "Recon and attack surface mapping", target: "Juice Shop", stepsLabel: "Tasks",
+        steps: ["Crawl the app", "Enumerate routes, parameters, roles, and technologies", "Review JS files for hidden endpoints", "Document trust boundaries"],
+        deliver: ["Attack surface inventory (spreadsheet)", "Sitemap/endpoint list", "Data flow diagram", "Prioritized test plan"] },
+      { title: "Authentication and session management review", target: "DVWA and Juice Shop", stepsLabel: "Tasks",
+        steps: ["Test login flows and password reset logic", "Check session token entropy and flags (HttpOnly, Secure, SameSite)", "Test for session fixation", "Check MFA/lockout behavior"],
+        deliver: ["Findings mapped to OWASP ASVS V2/V3", "Evidence screenshots", "Remediation guidance (e.g., rate limiting, token rotation)"] },
+      { title: "Injection and input handling", target: "DVWA, WebGoat", stepsLabel: "Tasks",
+        steps: ["Identify SQL injection, XSS (reflected, stored, DOM), and command injection points at low security levels", "Compare behavior at higher security levels", "Review the source to see why each fix works"],
+        deliver: ["Vulnerability write-ups with root cause", "CVSS scores", "Secure code fixes (parameterized queries, output encoding, CSP header proposal)"] },
+      { title: "Access control and business logic", target: "Juice Shop, WebGoat", stepsLabel: "Tasks",
+        steps: ["Test IDOR and privilege escalation", "Test forced browsing", "Test workflow bypasses (e.g., basket/coupon manipulation) using two or more user roles"],
+        deliver: ["Access control matrix (role vs. function)", "Proof-of-concept steps in Burp Repeater", "Recommended authorization model"] },
+      { title: "API security assessment", target: "OWASP crAPI", stepsLabel: "Tasks",
+        steps: ["Map the API from the OpenAPI spec or proxy traffic", "Test against the OWASP API Top 10: BOLA, broken auth, excessive data exposure, mass assignment, rate limiting"],
+        deliver: ["Postman collection of test cases", "API findings report", "Hardening checklist"] },
+      { title: "Configuration, headers, and dependency review", target: "Any self-hosted app", stepsLabel: "Tasks",
+        steps: ["Audit TLS config, security headers, CORS, error handling, and exposed files", "Run dependency scanning (OWASP Dependency-Check, `npm audit`)", "Compare automated results to manual findings"],
+        deliver: ["Configuration baseline", "Scanner-vs-manual comparison with false-positive analysis"] }
+    ],
+    capstone: { title: "Capstone: Full assessment and report", text: "Pick one app, define scope and rules of engagement, run a full methodology (OWASP WSTG), then retest after applying fixes. Deliverables:", items: ["Rules of engagement and scope document", "Executive summary (1 page, non-technical)", "Technical findings with severity, evidence, impact, and remediation", "Retest results showing fixed vs. open issues", "Short presentation (5–10 slides)"] },
+    after: [
+      { title: "Skills you'll demonstrate", text: "Methodology (WSTG/ASVS), proxy-based testing, risk rating (CVSS), secure code review, and professional reporting, which makes a strong portfolio." },
+      { title: "Suggested pacing", table: { head: ["Weeks", "Projects"], rows: [["1", "0 and 1"], ["2–3", "2 and 3"], ["4–5", "4 and 5"], ["6", "6"], ["7–8", "Capstone"]] } }
+    ],
+    tools: ["OWASP Juice Shop", "DVWA", "WebGoat", "crAPI", "Burp Suite Community", "OWASP ZAP", "Docker", "Postman", "OWASP Dependency-Check"] }
 ];
 const RESOURCES = [
   { id: "ports", type: "Cheat sheet", title: "Common ports and protocols", tags: ["networking", "security"], html: `<div class="table-wrap"><table><thead><tr><th>Port</th><th>Protocol</th><th>Transport</th><th>Purpose</th></tr></thead><tbody>${[["20/21","FTP","TCP","File transfer (unencrypted)"],["22","SSH","TCP","Encrypted remote administration"],["23","Telnet","TCP","Legacy, unencrypted — avoid"],["25","SMTP","TCP","Mail transfer between servers"],["53","DNS","UDP/TCP","Name resolution"],["67/68","DHCP","UDP","Automatic addressing"],["80","HTTP","TCP","Web (unencrypted)"],["123","NTP","UDP","Time synchronisation"],["443","HTTPS","TCP","Web over TLS"],["3389","RDP","TCP","Windows remote desktop"]].map(r => `<tr><td class="num">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("")}</tbody></table></div>` },

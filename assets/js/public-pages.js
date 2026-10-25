@@ -48,6 +48,13 @@ route("/", () => {
  <div class="grid g4 swipe" style="margin-top:20px">${LAB_LIST.slice(1, 5).map(l => `<a class="card card-link reveal" href="#/labs?t=${l.id}" style="color:var(--text);text-decoration:none"><span class="icon-box">${icon(l.icon)}</span><h4 style="margin:14px 0 6px;font-size:var(--t-base)">${l.title}</h4><p class="small muted">${l.desc}</p></a>`).join("")}</div>
 </div></section>
 
+<section class="section-tight"><div class="wrap"><div class="card reveal" style="padding:clamp(22px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:28px;align-items:center">
+ <div class="stack" style="gap:14px"><span class="eyebrow">Practice Arena</span><h2>Mock tests that get you exam-ready.</h2><p class="lead">132 practice questions across 33 topics, in six formats. Practise topic by topic with instant feedback, then sit a timed mock exam and see where to improve.</p>
+  <div class="hero-actions" style="margin:0"><a class="btn btn-primary" href="#/practice">${icon("target")}Start practising</a><a class="btn btn-ghost" href="#/practice?mode=exam">${icon("clock")}Take a mock exam</a></div>${currentUser() ? "" : `<p class="xs dim">${icon("lock", "icon", 'style="width:13px;height:13px;vertical-align:-2px"')} Free for registered students — <a href="#/register">create an account</a> or <a href="#/login?next=/practice">sign in</a>.</p>`}</div>
+ <div class="row" style="gap:8px">${["Multiple choice", "True / False", "Multiple select", "Fill in the blank", "Put in order", "Match the pairs"].map((t, i) => `<span class="chip ${["chip-blue", "chip-cyan", "chip-purple"][i % 3]}">${t}</span>`).join("")}
+  <div class="grid g3" style="width:100%;margin-top:12px;gap:12px">${[["33", "Topics"], ["132", "Questions"], ["70%", "Mock pass mark"]].map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("")}</div></div>
+</div></div></section>
+
 <section class="section-tight"><div class="wrap">
  <div class="row between" style="margin-bottom:32px;align-items:end"><div class="sec-head" style="margin:0"><span class="eyebrow">Projects showcase</span><h2>Build things you can explain.</h2></div><span class="demo-flag">Educational examples</span></div>
  <div class="grid g3 swipe">${PROJECTS.slice(0, 3).map(projectCard).join("")}</div>
@@ -89,7 +96,7 @@ route("/", () => {
 
 function projectCard(p) {
   const c = findCourse(p.course);
-  return `<div class="card reveal stack" style="gap:12px"><div class="row between"><span class="icon-box">${icon(p.icon)}</span><span class="demo-flag">Sample project</span></div><h4>${esc(p.title)}</h4><p class="small muted">${esc(p.brief)}</p><div class="row">${levelChip(p.level)}${c ? `<a class="chip" href="#${c.route}">${esc(c.title)}</a>` : ""}</div><div class="xs dim mono" style="margin-top:4px">DELIVERABLES</div><ul class="outcomes">${p.deliver.map(d => `<li>${icon("check")}${esc(d)}</li>`).join("")}</ul></div>`;
+  return `<div class="card reveal stack" style="gap:12px"><div class="row between"><span class="icon-box">${icon(p.icon)}</span><span class="demo-flag">Sample project</span></div><h4>${esc(p.title)}</h4><p class="small muted">${esc(p.brief)}</p><div class="row">${levelChip(p.level)}${c ? `<a class="chip" href="#${c.route}">${esc(c.title)}</a>` : ""}</div><div class="xs dim mono" style="margin-top:4px">DELIVERABLES</div><ul class="outcomes">${p.deliver.map(d => `<li>${icon("check")}${esc(d)}</li>`).join("")}</ul>${!currentUser() ? `<div class="row" style="margin-top:auto;padding-top:6px"><a class="btn btn-ghost btn-sm" href="#/login?next=${encodeURIComponent(p.guide ? "/projects/" + p.guide : "/projects")}">${icon("lock")}Sign in to open the guide</a></div>` : p.guide || p.pdf ? `<div class="row" style="margin-top:auto;padding-top:6px">${p.guide ? `<a class="btn btn-primary btn-sm" href="#/projects/${p.guide}">${icon("book")}Open full guide</a>` : ""}${p.pdf ? `<a class="btn btn-ghost btn-sm" href="${encodeURI(p.pdf)}" download>${icon("file")}PDF</a>` : ""}</div>` : ""}</div>`;
 }
 const faqItem = ([q, a]) => `<details><summary>${esc(q)} ${icon("chev", "icon chev")}</summary><div class="acc-body"><p>${esc(a)}</p></div></details>`;
 
@@ -205,7 +212,102 @@ route("/learning-paths", () => ({
 route("/projects", () => ({
   title: "Projects", desc: "Example guided projects from MND CODE courses: network design, VLAN routing, cloud architecture, Linux hardening and authorized web assessment.",
   html: pageHead("Projects", "Guided projects with real deliverables.", "These are educational example briefs used in the courses. They are not client work.", [["Home", "/"], ["Projects", ""]]) + `<section class="section-tight" style="padding-bottom:clamp(56px,8vw,104px)"><div class="wrap"><div class="grid g3">${PROJECTS.map(projectCard).join("")}</div></div></section>`
-}));
+}), { auth: "student" });
+
+/* Project guide pages: inline `code` and **bold** in guide text */
+const guideText = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+const pdfHref = p => encodeURI(p);
+const guideTable = t => `<div class="table-wrap"><table><thead><tr>${t.head.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${t.rows.map(r => `<tr>${r.map(c => `<td>${guideText(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+/* A free-form block: optional text, key facts, bullet list and table */
+const guideBlock = (b, id) => `<section class="card stack guide-block" style="gap:14px"${id ? ` id="${id}"` : ""}><h3>${esc(b.title)}</h3>
+  ${b.text ? `<p class="muted">${guideText(b.text)}</p>` : ""}
+  ${b.facts ? `<dl class="guide-facts">${b.facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${guideText(v)}</dd>`).join("")}</dl>` : ""}
+  ${b.items ? `<ul class="outcomes">${b.items.map(i => `<li>${icon("check")}<span>${guideText(i)}</span></li>`).join("")}</ul>` : ""}
+  ${b.table ? guideTable(b.table) : ""}</section>`;
+
+route("/projects/:slug", ({ slug }) => {
+  const g = PROJECT_GUIDES.find(x => x.slug === slug);
+  if (!g) return null;
+  const c = findCourse(g.course);
+  const key = "guide:" + g.slug;
+  const start = g.startAt ?? 1;
+  const unit = g.unit || "Project";
+  const ck = g.checklist, ckTotal = ck ? ck.groups.reduce((n, s) => n + s.items.length, 0) : 0;
+  const lvl = { Beginner: "chip-ok", Intermediate: "chip-blue", Advanced: "chip-purple" };
+  const pid = i => `guide-p${i}`;
+  const toc = [
+    ...(g.overview || []).map((b, i) => [`guide-o${i}`, b.title]),
+    ...(ck && !g.checklistAfter ? [["guide-checklist", ck.title]] : []),
+    ...g.projects.map((p, i) => [pid(i), `${unit} ${i + start}: ${p.title}`]),
+    ...(g.capstone ? [["guide-capstone", g.capstone.title.replace(/:.*/, "")]] : []),
+    ...(ck && g.checklistAfter ? [["guide-checklist", ck.title]] : []),
+    ...(g.after || []).map((b, i) => [`guide-a${i}`, b.title]),
+    ["guide-tools", "Tools"]
+  ];
+  const checklistHTML = !ck ? "" : `<section id="guide-checklist" class="stack" style="gap:18px">
+   <div class="row between"><h2>${esc(ck.title)}</h2><button type="button" class="btn btn-quiet btn-sm" id="gReset">${icon("reset")}Clear ticks</button></div>
+   <div class="card stack" style="gap:10px;padding:18px"><div class="row between small"><span>Checklist progress</span><span class="mono" id="gCount">0/${ckTotal}</span></div><div class="progress"><i id="gBar" style="width:0"></i></div><p class="xs dim">${esc(ck.intro || "")} Saved in this browser.</p></div>
+   <div class="grid ${ck.groups.length > 1 ? "g2" : ""}">${ck.groups.map((s, si) => `<div class="card stack" style="gap:12px"><div class="row"><span class="icon-box">${icon(s.icon || "check")}</span><h3 style="font-size:var(--t-md)">${esc(s.title)}</h3></div>
+     <ul class="guide-checks ${s.items.length > 6 ? "cols" : ""}">${s.items.map((it, ii) => `<li><label><input type="checkbox" data-k="${si}-${ii}"><span>${guideText(it)}</span></label></li>`).join("")}</ul></div>`).join("")}</div>
+  </section>`;
+  return {
+    title: g.short || g.title, desc: g.lead,
+    html: pageHead("Project guide", esc(g.title), esc(g.lead), [["Home", "/"], ["Projects", "/projects"], [g.short || g.title, ""]],
+      `<div class="row" style="margin-top:22px"><a class="btn btn-primary" href="${pdfHref(g.pdf)}" download>${icon("file")}Download PDF</a><a class="btn btn-ghost" href="#${pid(0)}">${icon("layers")}Jump to the ${g.projects.length} ${unit.toLowerCase()}s</a></div>
+       <div class="row" style="margin-top:18px">${c ? `<a class="chip chip-cyan" href="#${c.route}">${esc(c.title)}</a>` : ""}<span class="chip">${g.projects.length} ${unit.toLowerCase()}s</span>${ck ? `<span class="chip">${ckTotal}-point checklist</span>` : ""}${g.level ? `<span class="chip">${esc(g.level)}</span>` : ""}${g.time ? `<span class="chip">${icon("clock", "icon", 'style="width:12px;height:12px"')}${esc(g.time)}</span>` : ""}</div>`) + `
+<section class="section-tight"><div class="wrap guide-layout">
+ <aside class="guide-toc card" aria-label="On this page">
+  <span class="xs dim mono">ON THIS PAGE</span>
+  ${toc.map(([id, t]) => `<a href="#${id}">${esc(t)}</a>`).join("")}
+  <div class="guide-toc-prog"><div class="row between xs"><span class="dim">${unit}s done</span><span class="mono" id="gDone">0/${g.projects.length}</span></div><div class="progress" style="height:6px"><i id="gDoneBar" style="width:0"></i></div></div>
+ </aside>
+ <div class="stack" style="gap:32px;min-width:0">
+  ${g.warn ? `<div class="alert alert-warn">${icon("shield")}<div>${guideText(g.warn)}</div></div>` : ""}
+  ${(g.overview || []).map((b, i) => guideBlock(b, `guide-o${i}`)).join("")}
+  ${g.checklistAfter ? "" : checklistHTML}
+  <section class="stack" style="gap:18px">
+   <div><h2>${unit === "Phase" ? "Phases and deliverables" : "Guided projects"}</h2><p class="lead" style="margin-top:10px">Work through them in order. Tick <strong>Mark as done</strong> on each card as you finish — your progress is saved in this browser.</p></div>
+   ${g.projects.map((p, i) => `<article class="card guide-project" id="${pid(i)}">
+     <div class="row between"><div class="row"><span class="mod-num mono">${String(i + start).padStart(2, "0")}</span><div><span class="xs dim mono">${unit.toUpperCase()} ${i + start}</span><h3>${esc(p.title)}</h3></div></div>
+      <div class="row" style="gap:6px">${p.when ? `<span class="chip">${icon("clock", "icon", 'style="width:12px;height:12px"')}${esc(p.when)}</span>` : ""}${p.level ? `<span class="chip ${lvl[p.level] || ""}">${p.level}</span>` : ""}</div></div>
+     ${p.target ? `<p><strong>Target:</strong> <span class="muted">${guideText(p.target)}</span></p>` : ""}
+     ${p.goal ? `<p><strong>Goal:</strong> <span class="muted">${guideText(p.goal)}</span></p>` : ""}
+     <div class="guide-cols ${p.steps ? "" : "one"}">
+      ${p.steps ? `<div><div class="xs dim mono" style="margin-bottom:10px">${esc((p.stepsLabel || "Steps").toUpperCase())}</div><ol class="guide-steps">${p.steps.map(s => `<li>${guideText(s)}</li>`).join("")}</ol></div>` : ""}
+      <div><div class="xs dim mono" style="margin-bottom:10px">${esc((p.deliverLabel || (p.deliver.length > 1 ? "Deliverables" : "Deliverable")).toUpperCase())}</div><ul class="outcomes">${p.deliver.map(d => `<li>${icon("check")}<span>${guideText(d)}</span></li>`).join("")}</ul></div>
+     </div>
+     ${p.table ? `<div class="stack" style="gap:8px">${p.table.caption ? `<div class="xs dim mono">${esc(p.table.caption.toUpperCase())}</div>` : ""}${guideTable(p.table)}</div>` : ""}
+     <label class="guide-done"><input type="checkbox" data-done="${i}"><span>Mark as done</span></label>
+    </article>`).join("")}
+  </section>
+  ${g.capstone ? `<section id="guide-capstone" class="callout ok"><h4>${esc(g.capstone.title)}</h4>${g.capstone.text ? `<p class="small">${guideText(g.capstone.text)}</p>` : ""}${g.capstone.items ? `<ul class="outcomes" style="margin-top:12px">${g.capstone.items.map(i => `<li>${icon("check")}<span>${guideText(i)}</span></li>`).join("")}</ul>` : ""}</section>` : ""}
+  ${g.checklistAfter ? checklistHTML : ""}
+  ${(g.after || []).map((b, i) => guideBlock(b, `guide-a${i}`)).join("")}
+  <section id="guide-tools" class="stack" style="gap:14px"><h3>Tools you'll use</h3><div class="row" style="gap:8px">${g.tools.map(t => `<span class="chip chip-blue mono">${esc(t)}</span>`).join("")}</div>
+   ${g.note ? `<div class="alert alert-info">${icon("info")}<div>${guideText(g.note)}</div></div>` : ""}
+   ${g.warn ? "" : `<div class="alert alert-warn">${icon("shield")}<div>Practise only in a lab you own or are explicitly authorised to use. Snapshot or back up before each ${unit.toLowerCase()} so you can roll back.</div></div>`}</section>
+  <div class="row"><a class="btn btn-ghost" href="#/projects">${icon("left")}All projects</a>${(() => { const i = PROJECT_GUIDES.indexOf(g), n = PROJECT_GUIDES[(i + 1) % PROJECT_GUIDES.length]; return n !== g ? `<a class="btn btn-ghost" href="#/projects/${n.slug}">Next guide: ${esc(n.short || n.title)}${icon("arrow")}</a>` : ""; })()}</div>
+ </div>
+</div></section>`,
+    init: root => {
+      const saved = () => store.get(key, {});
+      const save = s => store.set(key, s);
+      const boxes = $$(".guide-checks input", root), dones = $$("[data-done]", root);
+      const paint = () => {
+        if (ck) { const n = boxes.filter(b => b.checked).length; $("#gCount", root).textContent = `${n}/${ckTotal}`; $("#gBar", root).style.width = `${(n / ckTotal) * 100}%`; }
+        const d = dones.filter(b => b.checked).length; $("#gDone", root).textContent = `${d}/${dones.length}`; $("#gDoneBar", root).style.width = `${(d / dones.length) * 100}%`;
+        dones.forEach(b => b.closest(".guide-project").classList.toggle("is-done", b.checked));
+      };
+      const s0 = saved();
+      boxes.forEach(b => { b.checked = !!s0[b.dataset.k]; b.onchange = () => { const s = saved(); b.checked ? s[b.dataset.k] = 1 : delete s[b.dataset.k]; save(s); paint(); }; });
+      dones.forEach(b => { b.checked = !!s0["done-" + b.dataset.done]; b.onchange = () => { const s = saved(); b.checked ? s["done-" + b.dataset.done] = 1 : delete s["done-" + b.dataset.done]; save(s); paint(); }; });
+      const reset = $("#gReset", root);
+      if (reset) reset.onclick = () => { const s = saved(); Object.keys(s).filter(k => !k.startsWith("done-")).forEach(k => delete s[k]); save(s); boxes.forEach(b => b.checked = false); paint(); };
+      $$('a[href^="#guide-"]', root).forEach(a => a.onclick = e => { e.preventDefault(); $(a.getAttribute("href"), root)?.scrollIntoView({ behavior: "smooth", block: "start" }); });
+      paint();
+    }
+  };
+}, { auth: "student" });
 
 route("/resources", () => {
   const sel = qparam("r");
@@ -222,7 +324,7 @@ route("/resources", () => {
       if (sel) $("#res-" + sel)?.scrollIntoView({ block: "center" });
     }
   };
-});
+}, { auth: "student" });
 
 route("/blog", () => {
   const per = 3; let page = Math.max(1, +(qparam("page") || 1)); const pages = Math.ceil(POSTS.length / per); page = Math.min(page, pages);
