@@ -23,7 +23,7 @@ TOOLS = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "mnd-apk-tools"
 BT_URL = "https://dl.google.com/android/repository/build-tools_r36_windows.zip"
 BT_SHA1 = "f16ccffd34de8790dede813a6c7d8e2c11a27b50"
 
-# PDFs are left out: the WebView can't open them
+# PDFs are left out (the WebView can't open them), and so is the APK download itself
 KEEP_FROM_BASE = {"assets/public/cordova.js", "assets/public/cordova_plugins.js"}
 
 
@@ -47,7 +47,7 @@ def build_tools():
 def site_files():
     if not (SITE / "index.html").exists():
         sys.exit("dist/ not found. Run `npm run build` first, then run this script again.")
-    return sorted(p for p in SITE.rglob("*") if p.is_file() and p.suffix.lower() != ".pdf")
+    return sorted(p for p in SITE.rglob("*") if p.is_file() and p.suffix.lower() not in (".pdf", ".apk"))
 
 
 def repack(unsigned):

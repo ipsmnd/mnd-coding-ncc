@@ -16,6 +16,9 @@ const FEATURES = [["route", "Structured learning paths", "Three sequenced paths 
   ["compass", "Clear about what's included", "No invented ratings, placement claims or certificates — just the curriculum, in full."]];
 const ROADMAP = [["01", "IT Fundamentals", "Hardware, operating systems, the command line and how the internet is put together."], ["02", "Networking", "Addressing, subnetting, switching, routing and core services."], ["03", "Cloud Infrastructure", "Virtual networks, connectivity, security groups and infrastructure as code."], ["04", "Security Fundamentals", "CIA, Linux, lab setup, assessment methodology and hardening."], ["05", "Practical Projects", "Design, build, assess and document real-world-style scenarios."]];
 const PROCESS = [["Discover", "Read the module overview and its objectives so you know what you are aiming for."], ["Learn", "Work through short lessons with diagrams and real examples."], ["Practice", "Apply it in the browser lab or a guided exercise straight away."], ["Build", "Combine skills in a project with a written deliverable."], ["Review", "Take the knowledge check, revisit mistakes and track progress."]];
+// The Android app is a Capacitor shell; no need to offer the APK inside it.
+const inApp = typeof window !== "undefined" && !!window.Capacitor;
+const APP_STEPS = [["Download the APK", "Tap the download button on your Android phone, or download it on a computer and copy it across."], ["Allow the install", "Open the file. If Android asks, allow installs from this source — the app isn't from the Play Store."], ["Open and learn", "Launch MND CODE from your home screen and pick up any course, lab or mock test."]];
 const LESSON_PARTS = ["What", "Why", "Explain", "Example", "Diagram", "Exercise", "Check", "Mistakes", "Summary"];
 
 export default function Home() {
@@ -31,6 +34,7 @@ export default function Home() {
             <h1><span className="grad-text">Master Networks.</span><br />Build in the Cloud.<br />Secure the Future.</h1>
             <p className="lead">Learn how modern networks operate, how cloud infrastructure connects the world, and how security professionals identify and reduce vulnerabilities through practical, responsible training.</p>
             <div className="hero-actions"><Link className="btn btn-primary btn-lg" to="/courses">Explore Our Courses <Icon name="arrow" /></Link><Link className="btn btn-ghost btn-lg" to="/labs"><Icon name="flask" />Explore Practical Labs</Link></div>
+            {!inApp && <a className="btn btn-ghost" href="app/MND-CODE.apk" download="MND-CODE.apk" style={{ marginTop: 14 }}><Icon name="download" />Download Android App</a>}
             <div className="hero-meta"><span><i />3 structured courses</span><span>{all.reduce((a, c) => a + c.modules.length, 0)} modules</span><span>10 browser lab exercises</span></div>
           </div>
           <HeroCanvas />
@@ -66,6 +70,13 @@ export default function Home() {
         <div className="row" style={{ gap: 8 }}>{["Multiple choice", "True / False", "Multiple select", "Fill in the blank", "Put in order", "Match the pairs"].map((t, i) => <span key={t} className={`chip ${["chip-blue", "chip-cyan", "chip-purple"][i % 3]}`}>{t}</span>)}
           <div className="grid g3" style={{ width: "100%", marginTop: 12, gap: 12 }}>{[["33", "Topics"], ["132", "Questions"], ["70%", "Mock pass mark"]].map(([v, l]) => <div className="stat" key={l}><b>{v}</b><span>{l}</span></div>)}</div></div>
       </div></div></section>
+
+      {!inApp && <section className="section-tight"><div className="wrap"><div className="card reveal" style={{ padding: "clamp(22px,4vw,40px)", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 28, alignItems: "center" }}>
+        <div className="stack" style={{ gap: 14 }}><span className="eyebrow"><Icon name="phone" style={{ width: 13, height: 13, verticalAlign: -2 }} /> Android app</span><h2>Take MND CODE with you.</h2><p className="lead">The whole platform — courses, browser labs, practice tests and guided projects — packaged as an Android app. Everything is bundled inside, so lessons and labs keep working without an internet connection.</p>
+          <div className="hero-actions" style={{ margin: 0 }}><a className="btn btn-primary" href="app/MND-CODE.apk" download="MND-CODE.apk"><Icon name="download" />Download for Android</a></div>
+          <p className="xs dim"><Icon name="info" style={{ width: 13, height: 13, verticalAlign: -2 }} /> Installed directly as an APK, not from the Play Store.</p></div>
+        <div className="stack" style={{ gap: 12 }}>{APP_STEPS.map(([t, d], i) => <div className="row" key={t} style={{ gap: 14, alignItems: "start", flexWrap: "nowrap" }}><span className="icon-box mono-in" style={{ flexShrink: 0 }}>{String(i + 1).padStart(2, "0")}</span><div><h4 style={{ margin: "2px 0 4px", fontSize: "var(--t-base)" }}>{t}</h4><p className="small muted">{d}</p></div></div>)}</div>
+      </div></div></section>}
 
       <section className="section-tight"><div className="wrap">
         <div className="row between" style={{ marginBottom: 32, alignItems: "end" }}><div className="sec-head" style={{ margin: 0 }}><span className="eyebrow">Projects showcase</span><h2>Build things you can explain.</h2></div><span className="demo-flag">Educational examples</span></div>

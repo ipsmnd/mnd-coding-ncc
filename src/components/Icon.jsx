@@ -1,6 +1,8 @@
 /* Icons (Lucide-style strokes). Path data is static and trusted. */
 export const IC = {
   arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  phone: '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>',
+  download: '<path d="M12 15V3"/><path d="m7 10 5 5 5-5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>',
   left: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
   chev: '<path d="m6 9 6 6 6-6"/>',
