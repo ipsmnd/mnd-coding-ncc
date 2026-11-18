@@ -1,10 +1,11 @@
-"""Rebuild the MND CODE Android APK from the current website files.
+"""Rebuild the MND CODE Android APK from the React build.
 
 Takes the Capacitor shell APK (app/MND-CODE-debug.apk), replaces the bundled
-website in assets/public/ with the site in the repo root, then zipaligns and
-signs the result with app/mnd-debug.keystore (created on first run).
+website in assets/public/ with the React production build in dist/, then
+zipaligns and signs the result with app/mnd-debug.keystore (created on first run).
 
-Usage:  python app/build-apk.py
+Usage:  npm run build          (creates dist/)
+        python app/build-apk.py
 Needs:  Java (keytool) on PATH. Android build-tools r36 are downloaded once
         (~58 MB, SHA-1 verified) into %LOCALAPPDATA%/mnd-apk-tools.
 """
@@ -12,7 +13,7 @@ import hashlib, os, shutil, subprocess, sys, urllib.request, zipfile
 from pathlib import Path
 
 APP = Path(__file__).resolve().parent
-SITE = APP.parent
+SITE = APP.parent / "dist"   # output of `npm run build`
 BASE_APK = APP / "MND-CODE-debug.apk"
 OUT_APK = APP / "MND-CODE-debug-v2.apk"
 KEYSTORE = APP / "mnd-debug.keystore"
@@ -22,8 +23,7 @@ TOOLS = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "mnd-apk-tools"
 BT_URL = "https://dl.google.com/android/repository/build-tools_r36_windows.zip"
 BT_SHA1 = "f16ccffd34de8790dede813a6c7d8e2c11a27b50"
 
-# Website files bundled into the app (PDFs are left out: the WebView can't open them)
-SKIP_HTML = {"original-single-file.html", "mock-test.html"}
+# PDFs are left out: the WebView can't open them
 KEEP_FROM_BASE = {"assets/public/cordova.js", "assets/public/cordova_plugins.js"}
 
 
@@ -45,9 +45,9 @@ def build_tools():
 
 
 def site_files():
-    files = [p for p in SITE.glob("*.html") if p.name not in SKIP_HTML]
-    files += [p for p in (SITE / "assets").rglob("*") if p.is_file()]
-    return sorted(files)
+    if not (SITE / "index.html").exists():
+        sys.exit("dist/ not found. Run `npm run build` first, then run this script again.")
+    return sorted(p for p in SITE.rglob("*") if p.is_file() and p.suffix.lower() != ".pdf")
 
 
 def repack(unsigned):
